@@ -27,6 +27,51 @@ def is_bodyweight_exercise(sets: list) -> bool:
     zero = sum(1 for s in sets if float(s["weight"] or 0) <= 0)
     return zero > len(sets) / 2
 
+def build_monthly_comparison(timeline: list) -> list:
+    from datetime import datetime
+    monthly = defaultdict(lambda: {
+        "sessions": 0,
+        "best_weight": 0,
+        "best_e1rm": 0,
+        "total_volume": 0,
+        "total_sets": 0,
+    })
+
+    for session in timeline:
+        month = session["date"][:7]  # "2026-03"
+        monthly[month]["sessions"] += 1
+        monthly[month]["total_volume"] += session["total_volume"]
+        monthly[month]["total_sets"] += session["set_count"]
+
+        if session["best_weight"] and session["best_weight"] > monthly[month]["best_weight"]:
+            monthly[month]["best_weight"] = session["best_weight"]
+
+        if session["best_e1rm"] and session["best_e1rm"] > monthly[month]["best_e1rm"]:
+            monthly[month]["best_e1rm"] = session["best_e1rm"]
+
+    result = []
+    months = sorted(monthly.keys())
+    for i, month in enumerate(months):
+        data = monthly[month]
+        prev = monthly[months[i - 1]] if i > 0 else None
+
+        weight_change = None
+        if prev and prev["best_weight"] > 0:
+            weight_change = round(
+                (data["best_weight"] - prev["best_weight"]) / prev["best_weight"] * 100, 1
+            )
+
+        result.append({
+            "month": month,
+            "sessions": data["sessions"],
+            "best_weight": data["best_weight"],
+            "best_e1rm": round(data["best_e1rm"], 1),
+            "total_volume": round(data["total_volume"], 1),
+            "total_sets": data["total_sets"],
+            "weight_change_pct": weight_change,
+        })
+
+    return result
 
 def build_progress_response(exercise_name: str, rows) -> Dict[str, Any]:
     if not rows:
@@ -166,4 +211,4 @@ def build_progress_response(exercise_name: str, rows) -> Dict[str, Any]:
         "plateau": detect_plateau(timeline) if not is_bw else {"plateau": False, "reason": "bodyweight"},
     }
 
-    return {"summary": summary, "timeline": timeline}
+    return {"summary": summary, "timeline": timeline, "monthly_comparison": build_monthly_comparison(timeline)}
