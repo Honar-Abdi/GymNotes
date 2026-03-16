@@ -1,0 +1,298 @@
+import { useState } from 'react';
+import { bulkPropose, bulkConfirm } from '../../api';
+
+const EXAMPLES = {
+  Yläkroppa: `Wide Pull Up 90kg x 10
+Wide Pull Up 95kg x 6
+Incline DB 32.5kg x 8 oikea
+Incline DB 28kg x 7 vasen
+Chest Supported Row 28.5kg x 12 oikea +12
+Triceps 31.25kg x 11 +3
+Preacher Bicep 14kg x 10 +3`,
+
+  Alakroppa: `Squats 100kg x 8
+Squats 105kg x 6
+RDL 80kg x 10
+Leg Extension 60kg x 12
+Leg Flexion 50kg x 12
+Calfs 60kg x 15
+Adductor 50kg x 15`,
+
+  Kehonpaino: `Pull Up x 10
+Pull Up x 8
+Dippi x 12
+Dippi x 10
+Muscle Up x 5`,
+};
+
+const DEFAULT_EXAMPLE = EXAMPLES.Yläkroppa;
+
+const DATE_BUTTONS = [
+  { label: 'TÄNÄÄN', days: 0 },
+  { label: 'EILEN', days: 1 },
+  { label: '2 PV', days: 2 },
+  { label: '3 PV', days: 3 },
+];
+
+function quickDate(daysAgo) {
+  const d = new Date();
+  d.setDate(d.getDate() - daysAgo);
+  return d.toISOString().slice(0, 10);
+}
+
+export default function TreeniForm() {
+  const [text, setText] = useState('');
+  const [date, setDate] = useState(quickDate(0));
+  const [name, setName] = useState('');
+  const [proposals, setProposals] = useState(null);
+  const [results, setResults] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const currentExample = EXAMPLES[name] ?? DEFAULT_EXAMPLE;
+
+  const grouped = proposals?.reduce((acc, p) => {
+    (acc[p.exercise_saved_as] = acc[p.exercise_saved_as] || []).push(p);
+    return acc;
+  }, {});
+
+  async function handlePropose() {
+    setLoading(true); setError(null); setProposals(null); setResults(null);
+    const lines = text.trim().split('\n').filter(l => l.trim());
+    try {
+      const data = await bulkPropose(lines, date, name);
+      setProposals(data.proposals);
+    } catch {
+      setError('Parsinta epäonnistui. Tarkista rivien muoto.');
+    } finally { setLoading(false); }
+  }
+
+  async function handleConfirm() {
+    setLoading(true);
+    try {
+      const data = await bulkConfirm(proposals, name);
+      setResults(data);
+      setProposals(null);
+      setText('');
+      setName('');
+    } catch {
+      setError('Tallennus epäonnistui.');
+    } finally { setLoading(false); }
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+      <div className="slide-up slide-up-1">
+        <label style={{ fontFamily: 'var(--font-display)', fontSize: '0.8rem', letterSpacing: '0.1em', color: 'var(--muted)', display: 'block', marginBottom: 8 }}>
+          KIRJAA TREENI
+        </label>
+        <p style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.6 }}>
+          Yksi setti per rivi:{' '}
+          <span style={{ color: 'var(--accent)', fontFamily: 'var(--font-display)' }}>
+            liike paino x toistot [+extra] [rir N] [oikea/vasen]
+          </span>
+        </p>
+      </div>
+
+      <div className="slide-up slide-up-2">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label style={{ fontFamily: 'var(--font-display)', fontSize: '0.7rem', letterSpacing: '0.1em', color: 'var(--muted)' }}>
+              PÄIVÄMÄÄRÄ
+            </label>
+            <div style={{ display: 'flex', gap: 4 }}>
+              {DATE_BUTTONS.map(({ label, days }) => {
+                const iso = quickDate(days);
+                return (
+                  <button
+                    key={label}
+                    onClick={() => setDate(iso)}
+                    style={{
+                      flex: 1,
+                      padding: '8px 2px',
+                      background: date === iso ? 'var(--accent)' : 'var(--surface2)',
+                      color: date === iso ? '#000' : 'var(--muted)',
+                      border: `1px solid ${date === iso ? 'var(--accent)' : 'var(--border)'}`,
+                      borderRadius: 3,
+                      fontSize: '0.6rem',
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+            <input
+              type="date"
+              value={date}
+              onChange={e => setDate(e.target.value)}
+              onClick={e => e.target.showPicker()}
+              style={{ width: '100%', cursor: 'pointer' }}
+            />
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label style={{ fontFamily: 'var(--font-display)', fontSize: '0.7rem', letterSpacing: '0.1em', color: 'var(--muted)' }}>
+              TREENIN NIMI (valinnainen)
+            </label>
+            <div style={{ display: 'flex', gap: 4 }}>
+              {['Yläkroppa', 'Alakroppa', 'Kehonpaino'].map(n => (
+                <button
+                  key={n}
+                  onClick={() => setName(n)}
+                  style={{
+                    flex: 1,
+                    padding: '8px 2px',
+                    background: name === n ? 'var(--accent)' : 'var(--surface2)',
+                    color: name === n ? '#000' : 'var(--muted)',
+                    border: `1px solid ${name === n ? 'var(--accent)' : 'var(--border)'}`,
+                    borderRadius: 3,
+                    fontSize: '0.6rem',
+                  }}
+                >
+                  {n.toUpperCase()}
+                </button>
+              ))}
+            </div>
+            <input
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="tai kirjoita nimi..."
+              style={{ width: '100%' }}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="slide-up slide-up-3">
+        <textarea
+          rows={12}
+          value={text}
+          onChange={e => setText(e.target.value)}
+          placeholder={currentExample}
+          style={{ resize: 'vertical', lineHeight: 1.8, fontFamily: 'monospace', fontSize: '0.85rem' }}
+        />
+      </div>
+
+      <div className="slide-up slide-up-4" style={{ display: 'flex', gap: 10 }}>
+        <button
+          onClick={handlePropose}
+          disabled={loading || !text.trim()}
+          style={{
+            flex: 1,
+            padding: '14px',
+            background: 'var(--accent)',
+            color: '#000',
+            fontSize: '0.9rem',
+            borderRadius: 4,
+            opacity: loading || !text.trim() ? 0.5 : 1,
+            transition: 'opacity 0.2s, transform 0.1s',
+          }}
+          onMouseEnter={e => { if (!loading && text.trim()) e.target.style.transform = 'translateY(-1px)'; }}
+          onMouseLeave={e => e.target.style.transform = 'translateY(0)'}
+        >
+          {loading ? 'PARSITAAN...' : 'ANALYSOI →'}
+        </button>
+        <button
+          onClick={() => setText(currentExample)}
+          style={{
+            padding: '14px 18px',
+            background: 'var(--surface)',
+            color: 'var(--muted)',
+            border: '1px solid var(--border)',
+            borderRadius: 4,
+            fontSize: '0.75rem',
+          }}
+        >
+          ESIMERKKI
+        </button>
+      </div>
+
+      {error && (
+        <div className="slide-up slide-up-1" style={{ padding: 16, background: '#1a0800', border: '1px solid var(--accent2)', borderRadius: 4, color: 'var(--accent2)', fontSize: '0.9rem' }}>
+          {error}
+        </div>
+      )}
+
+      {grouped && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div className="slide-up slide-up-1" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <p style={{ fontFamily: 'var(--font-display)', fontSize: '0.75rem', letterSpacing: '0.1em', color: 'var(--muted)' }}>
+              EHDOTUS — {proposals.length} SETTIÄ / {Object.keys(grouped).length} LIIKETTÄ
+            </p>
+            <div style={{ textAlign: 'right' }}>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text)', fontFamily: 'var(--font-display)' }}>{name || '—'}</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--muted)', marginLeft: 8 }}>{date}</span>
+            </div>
+          </div>
+
+          {Object.entries(grouped).map(([ex, sets], idx) => (
+            <div
+              key={ex}
+              className={`slide-up slide-up-${Math.min(idx + 2, 5)}`}
+              style={{ padding: '14px 16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 4 }}
+            >
+              <p style={{ fontFamily: 'var(--font-display)', fontSize: '0.75rem', letterSpacing: '0.1em', color: 'var(--accent)', marginBottom: 10 }}>
+                {ex}
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {sets.map((s, i) => (
+                  <div key={i} style={{
+                    padding: '6px 12px',
+                    background: 'var(--surface2)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 3,
+                    fontSize: '0.85rem',
+                    fontFamily: 'var(--font-display)',
+                    fontWeight: 600,
+                  }}>
+                    {s.weight > 0 ? `${s.weight}kg` : 'BW'} × {s.reps}
+                    {s.extra_reps > 0 && <span style={{ color: 'var(--accent2)' }}> +{s.extra_reps}</span>}
+                    {s.rir != null && <span style={{ color: 'var(--muted)', fontWeight: 400 }}> R{s.rir}</span>}
+                    {s.side && <span style={{ color: 'var(--muted)', fontWeight: 400 }}>{s.side === 'right' ? ' →' : ' ←'}</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          <div className="slide-up slide-up-5" style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+            <button
+              onClick={handleConfirm}
+              disabled={loading}
+              style={{
+                flex: 1,
+                padding: '14px',
+                background: 'var(--success)',
+                color: '#000',
+                borderRadius: 4,
+                fontSize: '0.9rem',
+                transition: 'transform 0.1s',
+              }}
+              onMouseEnter={e => e.target.style.transform = 'translateY(-1px)'}
+              onMouseLeave={e => e.target.style.transform = 'translateY(0)'}
+            >
+              TALLENNA {proposals.length} SETTIÄ
+            </button>
+            <button
+              onClick={() => setProposals(null)}
+              style={{ padding: '14px 20px', background: 'var(--surface2)', color: 'var(--muted)', borderRadius: 4, fontSize: '0.85rem' }}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
+      {results && (
+        <div className="slide-up slide-up-1" style={{ padding: 16, background: '#001a0d', border: '1px solid var(--success)', borderRadius: 4, color: 'var(--success)', fontSize: '0.9rem' }}>
+          Tallennettu {results.saved} settiä
+          {results.name && <span style={{ color: 'var(--text)', marginLeft: 6 }}>— {results.name}</span>}
+        </div>
+      )}
+
+    </div>
+  );
+}
