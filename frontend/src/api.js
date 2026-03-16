@@ -76,3 +76,27 @@ export async function getDashboard() {
   const res = await fetch(`${BASE}/dashboard`);
   return res.json();
 }
+
+// --- Cardio ---
+
+export async function logCardio(date, type, duration_min, distance_km) {
+  const res = await fetch(`${BASE}/cardio/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ date, type, duration_min, distance_km }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function getAllCardio() {
+  const res = await fetch(`${BASE}/cardio/`);
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function deleteCardio(cardioId) {
+  const res = await fetch(`${BASE}/cardio/${cardioId}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
