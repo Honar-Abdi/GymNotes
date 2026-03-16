@@ -25,30 +25,39 @@ def build_dashboard_response():
         JOIN set_entry se ON se.session_id = ws.id
         ORDER BY ws.date ASC
     """).fetchall()
+
+    cardio_sessions = cur.execute("""
+        SELECT ws.id, ws.date, ce.duration_min, ce.distance_km
+        FROM workout_session ws
+        JOIN cardio_entry ce ON ce.session_id = ws.id
+        ORDER BY ws.date ASC
+    """).fetchall()
+
     conn.close()
 
-    if not sessions:
+    if not sessions and not cardio_sessions:
         return {"empty": True}
 
     rows = [dict(r) for r in sessions]
+    cardio_rows = [dict(r) for r in cardio_sessions]
 
-    # --- Viikon sessiot ---
+    # --- Viikon sessiot (treeni + cardio) ---
     week_start, week_end = get_week_range()
     week_dates = sorted(set(
-        r["date"] for r in rows
+        r["date"] for r in rows + cardio_rows
         if week_start <= r["date"] <= week_end
     ))
 
-    # --- Viimeisin sessio ---
-    last_date = max(r["date"] for r in rows)
-    last_rows = [r for r in rows if r["date"] == last_date]
+    # --- Viimeisin treeni-sessio ---
+    last_date = max(r["date"] for r in rows) if rows else None
+    last_rows = [r for r in rows if r["date"] == last_date] if last_date else []
     last_exercises = list(dict.fromkeys(r["exercise"] for r in last_rows))
     last_name = last_rows[0]["name"] if last_rows else None
 
     best_last = max(
         last_rows,
         key=lambda r: epley_e1rm(float(r["weight"] or 0), int(r["reps"]))
-    )
+    ) if last_rows else None
 
     last_set_count = len(last_rows)
     last_volume = sum(
@@ -57,7 +66,7 @@ def build_dashboard_response():
         if float(r["weight"] or 0) > 0
     )
 
-    # --- PR per liike — paras oikea paino ---
+    # --- PR per liike ---
     exercise_bests = defaultdict(lambda: {"weight": 0, "reps": 0, "date": ""})
     exercise_history = defaultdict(list)
     recent_cutoff = (date.today() - timedelta(days=14)).isoformat()
@@ -68,9 +77,7 @@ def build_dashboard_response():
         if weight <= 0:
             continue
         ex = r["exercise"]
-
         exercise_history[ex].append({"date": r["date"], "weight": weight})
-
         if weight > exercise_bests[ex]["weight"]:
             exercise_bests[ex] = {
                 "exercise": ex,
@@ -91,25 +98,44 @@ def build_dashboard_response():
 
     prs = sorted(prs, key=lambda x: x["weight"], reverse=True)[:6]
 
-    # --- Kaikki sessiot ---
-    all_sessions = []
-    seen = {}
+    # --- Kaikki treeni-sessiot ---
+    seen_training = {}
     for r in rows:
         d = r["date"]
-        if d not in seen:
-            seen[d] = {"date": d, "name": r["name"]}
-            all_sessions.append(seen[d])
+        if d not in seen_training:
+            seen_training[d] = {"date": d, "name": r["name"], "type": "treeni"}
 
-    all_dates = sorted(seen.keys())
+    # --- Kaikki cardio-sessiot ---
+    seen_cardio = {}
+    for r in cardio_rows:
+        d = r["date"]
+        if d not in seen_cardio:
+            seen_cardio[d] = {"date": d, "name": "Aerobinen", "type": "cardio"}
+
+    # Yhdistetty kalenteri-lookup
+    seen_all = {}
+    for d, s in seen_training.items():
+        seen_all[d] = s
+    for d, s in seen_cardio.items():
+        if d not in seen_all:
+            seen_all[d] = s
+        else:
+            # Sama päivä — treeni menee etusijalle kalenterissa
+            pass
+
+    all_dates = sorted(seen_all.keys())
 
     # --- Treenijako tässä kuussa ---
     this_month = date.today().strftime("%Y-%m")
-    month_sessions = [s for s in all_sessions if s["date"].startswith(this_month)]
+    month_sessions_training = [s for s in seen_training.values() if s["date"].startswith(this_month)]
+    month_sessions_cardio = [s for s in seen_cardio.values() if s["date"].startswith(this_month)]
 
     session_type_counts = defaultdict(int)
-    for s in month_sessions:
+    for s in month_sessions_training:
         label = s["name"] or "Muu"
         session_type_counts[label] += 1
+    for s in month_sessions_cardio:
+        session_type_counts["Aerobinen"] += 1
 
     training_split = [
         {"name": k, "count": v}
@@ -136,16 +162,17 @@ def build_dashboard_response():
     for i in range(28):
         d = calendar_start + timedelta(days=i)
         iso = d.isoformat()
-        session = seen.get(iso)
+        session = seen_all.get(iso)
         calendar_days.append({
             "date": iso,
-            "trained": iso in seen,
+            "trained": iso in seen_all,
             "name": session["name"] if session else None,
+            "type": session["type"] if session else None,
             "is_today": iso == today.isoformat(),
         })
 
     # --- Streak / frekvenssi ---
-    sessions_this_month = len(month_sessions)
+    sessions_this_month = len(month_sessions_training) + len(month_sessions_cardio)
 
     avg_days = None
     if len(all_dates) >= 2:
@@ -170,7 +197,7 @@ def build_dashboard_response():
                 "exercise": best_last["exercise"],
                 "weight": float(best_last["weight"]),
                 "reps": int(best_last["reps"]),
-            }
+            } if best_last else None
         },
         "prs": prs,
         "training_split": training_split,
