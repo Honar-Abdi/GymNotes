@@ -1,7 +1,6 @@
 from typing import Optional, Tuple, List
 from datetime import date, timedelta
 import re
-import difflib
 
 
 def normalize(s: str) -> str:
@@ -19,18 +18,6 @@ def best_match_exercise(user_input: str, choices: List[str]) -> Tuple[str, Optio
     for c in choices:
         if c.lower() == raw.lower():
             return c, "exact"
-
-    norm_map = {normalize(c): c for c in choices}
-    candidates = list(norm_map.keys())
-
-    norm_raw = normalize(raw)
-    close = difflib.get_close_matches(norm_raw, candidates, n=1, cutoff=0.6)
-    if close:
-        return norm_map[close[0]], "fuzzy"
-
-    for c in choices:
-        if norm_raw in normalize(c):
-            return c, "fuzzy"
 
     return raw.title(), None
 
@@ -119,6 +106,7 @@ def parse_weight_reps(text: str) -> Tuple[float, int, str]:
     t = text.strip()
     t2 = t.replace(",", ".")
 
+    # Paino + x + toistot: "80kg x 10" tai "80 x 10"
     m = re.search(r"\b(\d+(?:\.\d+)?)\s*(?:kg)?\s*[x\*]\s*(\d+)\b", t2, flags=re.IGNORECASE)
     if m:
         weight = float(m.group(1))
@@ -127,6 +115,7 @@ def parse_weight_reps(text: str) -> Tuple[float, int, str]:
         cleaned = re.sub(r"\s+", " ", cleaned)
         return weight, reps, cleaned
 
+    # Paino ilman x: "80kg 10" tai "80 10"
     m2 = re.search(r"\b(\d+(?:\.\d+)?)\s*(?:kg)?\s+(\d+)\b", t2, flags=re.IGNORECASE)
     if m2:
         weight = float(m2.group(1))
@@ -135,4 +124,13 @@ def parse_weight_reps(text: str) -> Tuple[float, int, str]:
         cleaned = re.sub(r"\s+", " ", cleaned)
         return weight, reps, cleaned
 
-    raise ValueError("En löytänyt painoa ja toistoja. Käytä esim: 'triceps 31.25kg 11 +4' tai 'row right 28.5 x 10'.")
+    # Bodyweight: vain toistot ilman painoa — "x 10" tai "x10"
+    m3 = re.search(r"[x\*]\s*(\d+)\b", t2, flags=re.IGNORECASE)
+    if m3:
+        reps = int(m3.group(1))
+        cleaned = re.sub(r"[x\*]\s*\d+\b", "", t2, flags=re.IGNORECASE).strip()
+        cleaned = re.sub(r"\s+", " ", cleaned)
+        return 0.0, reps, cleaned
+
+    raise ValueError("En löytänyt painoa ja toistoja. Käytä esim: 'Pull Up x 10' tai 'bench press 80kg x 5'.")
+
