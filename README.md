@@ -211,3 +211,14 @@ Building this project end to end taught me how to design and connect all layers 
 Working with the Canvas API for custom charts was also new territory. Handling device pixel ratios, resize observers and smooth animations without any library required careful implementation.
 
 ---
+
+## Planned Features
+
+- Morning weight tracking to correlate body weight with training performance
+- Muscle group tagging per exercise for volume distribution analysis
+- Mobile optimized layout
+- Goal setting per exercise with progress bar toward target weight
+
+--- 
+
+**Built for personal use. Real data, real workouts. Actively maintained.**
