@@ -1,0 +1,2 @@
+DELETE FROM set_entry
+WHERE ID = 22;
