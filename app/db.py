@@ -15,6 +15,13 @@ def _column_exists(cursor: sqlite3.Cursor, table: str, column: str) -> bool:
     return any(r[1] == column for r in rows)
 
 
+def _table_exists(cursor: sqlite3.Cursor, table: str) -> bool:
+    row = cursor.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table,)
+    ).fetchone()
+    return row is not None
+
+
 def init_db():
     conn = get_connection()
     cursor = conn.cursor()
@@ -38,7 +45,7 @@ def init_db():
     )
     """)
 
-    # --- Migraatiot ---
+    # --- Migraatiot: set_entry ---
     if not _column_exists(cursor, "set_entry", "rir"):
         cursor.execute("ALTER TABLE set_entry ADD COLUMN rir INTEGER NULL")
 
@@ -55,6 +62,19 @@ def init_db():
     CREATE UNIQUE INDEX IF NOT EXISTS ux_set_entry_session_exercise_setindex
     ON set_entry(session_id, exercise, set_index)
     """)
+
+    # --- Migraatio: cardio_entry ---
+    if not _table_exists(cursor, "cardio_entry"):
+        cursor.execute("""
+        CREATE TABLE cardio_entry (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id INTEGER NOT NULL,
+            type TEXT NOT NULL,
+            duration_min REAL NOT NULL,
+            distance_km REAL NOT NULL,
+            FOREIGN KEY (session_id) REFERENCES workout_session(id)
+        )
+        """)
 
     conn.commit()
     conn.close()

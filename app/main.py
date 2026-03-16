@@ -8,6 +8,7 @@ from app.routers.chat import router as chat_router
 from app.routers.confirm import router as confirm_router
 from app.routers.bulk import router as bulk_router
 from app.routers.dashboard import router as dashboard_router
+from app.routers.cardio import router as cardio_router
 
 app = FastAPI()
 init_db()
@@ -25,6 +26,7 @@ app.include_router(chat_router)
 app.include_router(confirm_router)
 app.include_router(bulk_router)
 app.include_router(dashboard_router)
+app.include_router(cardio_router)
 
 @app.get("/")
 def read_root():
