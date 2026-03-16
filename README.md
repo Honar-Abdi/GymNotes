@@ -1,61 +1,71 @@
 # GymNotes
 
-Personal gym tracking and analytics application for logging workouts and visualizing training progress over time.
+Personal gym tracking and analytics application — log workouts, track personal records and visualize training progress over time.
 
-Built by Honar Abdi.
+Built by Honar Abdi
 
 ---
 
-## Overview
+![Dashboard](screenshots/dashboard.png)
 
-GymNotes is a full-stack web application I built after going to the gym regularly for over a year and wanting a proper way to track and analyze my progress. Instead of using a generic fitness app, I built exactly what I needed.
+---
 
-The app lets me log every workout session using a natural text format, stores the data in a local SQLite database, and visualizes progress through an analytics dashboard.
+## What is this?
+
+I have been going to the gym regularly for over a year and wanted a proper way to track my progress. Instead of spreadsheets or generic fitness apps, I built exactly what I needed — a personal analytics tool that turns raw workout data into meaningful insights.
+
+---
+
+## Screenshots
+
+| Dashboard | Workout Logging |
+|-----------|----------------|
+| ![Dashboard](screenshots/dashboard.png) | ![Logging](screenshots/bulk.png) |
+
+| History | Progress |
+|---------|----------|
+| ![History](screenshots/history.png) | ![Progress](screenshots/progress.png) |
 
 ---
 
 ## Features
 
-### Dashboard
-- Weekly goal tracker with progress bar (target: 4 sessions per week)
-- 28-day training calendar with color-coded session types
-- Last session summary with sets, exercises and best set
+**Dashboard**
+- Weekly training goal with progress bar
+- 28-day calendar with color-coded session types
+- Last session summary including sets, exercises and best set
 - Training split breakdown for the current month
-- Weekly sets per week for the last 6 weeks
+- Weekly set volume chart for the last 6 weeks
 - Personal records per exercise with sparkline trend charts
 
-### Workout Logging
-- Natural language bulk input, type workouts line by line
+**Workout Logging**
+- Natural language input, type workouts line by line
 - Format: Exercise weight x reps
-- Session naming with quick-select buttons
-- Date quick-select for today, yesterday or previous days
-- Preview and confirm before saving
+- Quick-select buttons for session name and date
+- Preview and confirm before saving to database
 
-### History
+**History**
 - Full session history sorted by date
-- Session details with all sets
+- Expandable session details with all sets
 - Delete individual sets or entire sessions
 
-### Progress
-- Select any exercise to view full progress history
-- Estimated 1 rep max trend over time using the Epley formula
-- Best set per session and volume trends
+**Progress**
+- Per-exercise progress history
+- Estimated 1 rep max trend using the Epley formula
+- Monthly comparison chart
+- Volume and frequency statistics
+- Plateau detection
 
 ---
 
 ## Tech Stack
 
-### Backend
-- Python
-- FastAPI
-- SQLite
-- Pydantic
-
-### Frontend
-- React
-- Vite
-- Canvas API for custom charts
-- CSS Variables for theming
+| Layer | Technology |
+|-------|-----------|
+| Backend | Python, FastAPI, SQLite, Pydantic |
+| Frontend | React, Vite |
+| Charts | Canvas API, no chart library |
+| Styling | CSS Variables, custom animations |
 
 ---
 
@@ -82,35 +92,36 @@ gym-agent/
 │   └── main.py
 ├── frontend/
 │   └── src/
-│       ├── components/
-│       │   └── dashboard/
-│       │       ├── LastSession.jsx
-│       │       ├── MonthCalendar.jsx
-│       │       ├── PRCard.jsx
-│       │       ├── PRGrid.jsx
-│       │       ├── StreakBar.jsx
-│       │       ├── TrainingSplit.jsx
-│       │       └── WeeklyVolume.jsx
+│       ├── assets/
+│       ├── components/dashboard/
+│       │   ├── LastSession.jsx
+│       │   ├── MonthCalendar.jsx
+│       │   ├── PRCard.jsx
+│       │   ├── PRGrid.jsx
+│       │   ├── StreakBar.jsx
+│       │   ├── TrainingSplit.jsx
+│       │   ├── WeeklyVolume.jsx
+│       │   └── WeekStrip.jsx
 │       ├── pages/
 │       │   ├── Bulk.jsx
 │       │   ├── Dashboard.jsx
 │       │   ├── History.jsx
+│       │   ├── Log.jsx
 │       │   └── Progress.jsx
 │       ├── api.js
-│       └── App.jsx
-├── gym.sqlite
-└── query.sql
-
+│       ├── App.css
+│       ├── App.jsx
+│       ├── index.css
+│       └── main.jsx
 ```
+
 ---
 
 ## Running Locally
 
-### Requirements
-- Python 3.10 or higher
-- Node.js 18 or higher
+Requirements: Python 3.10 or higher and Node.js 18 or higher.
 
-### Backend
+**Backend**
 ```
 cd gym-agent
 python -m venv venv
@@ -119,7 +130,7 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-### Frontend
+**Frontend**
 ```
 cd gym-agent/frontend
 npm install
@@ -142,16 +153,22 @@ All analytics are computed at query time from raw set data.
 
 ## Key Technical Decisions
 
-- SQLite over PostgreSQL because this is a single user personal project with no infrastructure overhead
-- Custom Canvas charts instead of a chart library for full control over visuals
-- Natural language input for faster workout logging
-- Epley formula for estimated 1 rep max: weight x (1 + reps/30)
+**SQLite over PostgreSQL** — single user personal project, zero infrastructure overhead, database is just a file.
+
+**Custom Canvas charts** — all visualizations built from scratch using the Canvas API instead of a chart library. Full control over appearance and behavior.
+
+**Natural language input** — logging workouts by typing is faster than filling out forms. The parser handles fuzzy matching for exercise names.
+
+**Epley formula for e1RM** — weight multiplied by 1 plus reps divided by 30 gives an estimated 1 rep max used for progress tracking and personal records.
 
 ---
 
 ## What I Learned
 
-- Building a full-stack application from scratch including API design, data modeling and frontend state management
-- Writing analytical queries and aggregating time-series data
-- Implementing custom data visualizations using the Canvas API
-- Structuring a Python backend with separation of concerns between routers, services and repositories
+Building this project end to end taught me how to design and connect all layers of a full-stack application, from database schema to REST API to frontend state management. The most interesting technical challenge was building the analytics layer: aggregating time-series workout data into meaningful metrics like monthly comparisons, plateau detection and personal records.
+
+Working with the Canvas API for custom charts was also new territory, handling device pixel ratios, resize observers and smooth animations without any library.
+
+---
+
+Built for personal use. Real data, real workouts.
