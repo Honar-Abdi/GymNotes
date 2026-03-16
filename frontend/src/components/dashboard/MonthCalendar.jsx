@@ -3,6 +3,8 @@ const DAY_LABELS = ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'];
 const TYPE_COLORS = {
   'Yläkroppa': '#e8ff00',
   'Alakroppa': '#00ff88',
+  'Kehonpaino': '#00cfff',
+  'Aerobinen': '#e8512a',
 };
 
 function getDotColor(name) {
@@ -28,7 +30,7 @@ export default function MonthCalendar({ calendar }) {
         }}>
           VIIMEISET 28 PÄIVÄÄ
         </p>
-        <div style={{ display: 'flex', gap: 12 }}>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
           {Object.entries(TYPE_COLORS).map(([name, color]) => (
             <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               <div style={{
@@ -49,7 +51,6 @@ export default function MonthCalendar({ calendar }) {
         </div>
       </div>
 
-      {/* Päivä-otsikot */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(7, 1fr)',
@@ -69,13 +70,12 @@ export default function MonthCalendar({ calendar }) {
         ))}
       </div>
 
-      {/* Kalenteri-ruudukko */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(7, 1fr)',
         gap: 4,
       }}>
-        {calendar.map(({ date, trained, name, is_today }) => {
+        {calendar.map(({ date, trained, name, type, is_today }) => {
           const color = trained ? getDotColor(name) : null;
           return (
             <div
@@ -102,7 +102,6 @@ export default function MonthCalendar({ calendar }) {
                 cursor: 'default',
               }}
             >
-              {/* Täyteväri-palkki alareunassa treeni-päivinä */}
               {trained && (
                 <div style={{
                   position: 'absolute',
@@ -115,7 +114,6 @@ export default function MonthCalendar({ calendar }) {
                 }} />
               )}
 
-              {/* Väripiste ylhäällä treeni-päivinä */}
               {trained && (
                 <div style={{
                   position: 'absolute',
@@ -130,7 +128,6 @@ export default function MonthCalendar({ calendar }) {
                 }} />
               )}
 
-              {/* Tänään-indikaattori */}
               {is_today && !trained && (
                 <div style={{
                   position: 'absolute',

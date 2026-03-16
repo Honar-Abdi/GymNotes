@@ -3,6 +3,8 @@ import { useEffect, useRef } from 'react';
 const TYPE_COLORS = {
   'Yläkroppa': '#e8ff00',
   'Alakroppa': '#00ff88',
+  'Kehonpaino': '#00cfff',
+  'Aerobinen': '#e8512a',
   'Muu': '#444',
 };
 
@@ -46,13 +48,11 @@ function DonutChart({ data, size = 120 }) {
       startAngle += slice;
     });
 
-    // Sisäympyrä — reikä donitsiiin
     ctx.beginPath();
     ctx.arc(cx, cy, innerRadius, 0, Math.PI * 2);
     ctx.fillStyle = '#050505';
     ctx.fill();
 
-    // Keskellä total
     ctx.fillStyle = '#f0f0f0';
     ctx.font = `700 ${size * 0.18}px 'Barlow Condensed', sans-serif`;
     ctx.textAlign = 'center';
@@ -98,10 +98,8 @@ export default function TrainingSplit({ data }) {
       </p>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-        {/* Donitsi */}
         <DonutChart data={data} size={110} />
 
-        {/* Selite */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
           {data.map(({ name, count }) => (
             <div key={name}>
@@ -135,7 +133,6 @@ export default function TrainingSplit({ data }) {
                   {count} / {total}
                 </span>
               </div>
-              {/* Edistymispalkki */}
               <div style={{
                 height: 4,
                 background: 'var(--surface2)',
