@@ -31,24 +31,24 @@ export default function History() {
     if (selected === sessionId) { setSelected(null); setDetail(null); }
   }
 
-async function handleDeleteSet(setId) {
-  if (!confirm('Poistetaanko tämä setti?')) return;
-  try {
-    await deleteSet(setId);
-    const updated = await getSessionDetail(selected);
-    if (updated.sets.length === 0) {
-      await deleteSession(selected);
-      setSessions(s => s.filter(x => x.id !== selected));
-      setSelected(null); setDetail(null);
-    } else {
-      setDetail(updated);
-      setSessions(s => s.map(x => x.id === selected ? { ...x, set_count: updated.sets.length } : x));
+  async function handleDeleteSet(setId) {
+    if (!confirm('Poistetaanko tämä setti?')) return;
+    try {
+      await deleteSet(setId);
+      const updated = await getSessionDetail(selected);
+      if (updated.sets.length === 0) {
+        await deleteSession(selected);
+        setSessions(s => s.filter(x => x.id !== selected));
+        setSelected(null); setDetail(null);
+      } else {
+        setDetail(updated);
+        setSessions(s => s.map(x => x.id === selected ? { ...x, set_count: updated.sets.length } : x));
+      }
+    } catch (e) {
+      alert('Poisto epäonnistui — yritä uudelleen.');
+      await loadSessions();
     }
-  } catch (e) {
-    alert('Poisto epäonnistui — yritä uudelleen.');
-    await loadSessions();
   }
-}
 
   if (loading) return <p style={{ color: 'var(--muted)' }}>Ladataan...</p>;
 
@@ -58,15 +58,32 @@ async function handleDeleteSet(setId) {
   }, {});
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <label style={{ fontFamily: 'var(--font-display)', fontSize: '0.8rem', letterSpacing: '0.1em', color: 'var(--muted)', marginBottom: 8 }}>
-        TREENIHISTORIA
-      </label>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 40 }}>
 
-      {sessions.length === 0 && <p style={{ color: 'var(--muted)' }}>Ei sessioita vielä.</p>}
+      <div className="slide-up slide-up-1">
+        <label style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: '0.8rem',
+          letterSpacing: '0.1em',
+          color: 'var(--muted)',
+          display: 'block',
+          marginBottom: 16,
+        }}>
+          TREENIHISTORIA
+        </label>
+      </div>
 
-      {sessions.map(s => (
-        <div key={s.id}>
+      {sessions.length === 0 && (
+        <p className="slide-up slide-up-2" style={{ color: 'var(--muted)' }}>
+          Ei sessioita vielä.
+        </p>
+      )}
+
+      {sessions.map((s, idx) => (
+        <div
+          key={s.id}
+          className={`slide-up slide-up-${Math.min(idx + 1, 5)}`}
+        >
           <div
             onClick={() => loadDetail(s.id)}
             style={{
@@ -78,6 +95,7 @@ async function handleDeleteSet(setId) {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
+              transition: 'background 0.2s, border-color 0.2s',
             }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -101,6 +119,7 @@ async function handleDeleteSet(setId) {
                   border: '1px solid var(--border)',
                   borderRadius: 3,
                   fontSize: '0.75rem',
+                  transition: 'color 0.15s',
                 }}
                 onMouseEnter={e => e.target.style.color = 'var(--accent2)'}
                 onMouseLeave={e => e.target.style.color = 'var(--muted)'}
@@ -111,17 +130,30 @@ async function handleDeleteSet(setId) {
           </div>
 
           {selected === s.id && grouped && (
-            <div style={{ padding: '16px 18px', background: '#0d0d0d', border: '1px solid var(--border)', borderTop: 'none', borderRadius: '0 0 4px 4px' }}>
+            <div style={{
+              padding: '16px 18px',
+              background: 'var(--surface2)',
+              border: '1px solid var(--border)',
+              borderTop: 'none',
+              borderRadius: '0 0 4px 4px',
+              animation: 'slideUp 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards',
+            }}>
               {Object.entries(grouped).map(([ex, sets]) => (
                 <div key={ex} style={{ marginBottom: 16 }}>
-                  <p style={{ fontFamily: 'var(--font-display)', fontSize: '0.75rem', letterSpacing: '0.1em', color: 'var(--accent)', marginBottom: 8 }}>
+                  <p style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: '0.75rem',
+                    letterSpacing: '0.1em',
+                    color: 'var(--accent)',
+                    marginBottom: 8,
+                  }}>
                     {ex}
                   </p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                     {sets.map((set, i) => (
                       <div key={i} style={{
                         padding: '6px 12px',
-                        background: 'var(--surface2)',
+                        background: 'var(--surface)',
                         border: '1px solid var(--border)',
                         borderRadius: 3,
                         fontSize: '0.85rem',
@@ -130,6 +162,7 @@ async function handleDeleteSet(setId) {
                         display: 'flex',
                         alignItems: 'center',
                         gap: 8,
+                        transition: 'border-color 0.15s',
                       }}>
                         <span>
                           {set.weight}kg × {set.reps}
@@ -146,6 +179,7 @@ async function handleDeleteSet(setId) {
                             fontSize: '0.7rem',
                             padding: '0 2px',
                             lineHeight: 1,
+                            transition: 'color 0.15s',
                           }}
                           onMouseEnter={e => e.target.style.color = 'var(--accent2)'}
                           onMouseLeave={e => e.target.style.color = 'var(--muted)'}

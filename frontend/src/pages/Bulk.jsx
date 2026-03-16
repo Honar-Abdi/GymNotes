@@ -47,7 +47,6 @@ export default function Bulk() {
     return acc;
   }, {});
 
-  // Pikavalinnat
   function quickDate(daysAgo) {
     const d = new Date();
     d.setDate(d.getDate() - daysAgo);
@@ -55,128 +54,129 @@ export default function Bulk() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <label style={{
-        fontFamily: 'var(--font-display)',
-        fontSize: '0.8rem',
-        letterSpacing: '0.1em',
-        color: 'var(--muted)',
-      }}>
-        KIRJAA TREENI
-      </label>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 40 }}>
 
-      <p style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.6 }}>
-        Yksi setti per rivi:{' '}
-        <span style={{ color: 'var(--accent)', fontFamily: 'var(--font-display)' }}>
-          liike paino x toistot [+extra] [rir N] [oikea/vasen]
-        </span>
-      </p>
+      <div className="slide-up slide-up-1">
+        <label style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: '0.8rem',
+          letterSpacing: '0.1em',
+          color: 'var(--muted)',
+          display: 'block',
+          marginBottom: 8,
+        }}>
+          KIRJAA TREENI
+        </label>
+        <p style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.6 }}>
+          Yksi setti per rivi:{' '}
+          <span style={{ color: 'var(--accent)', fontFamily: 'var(--font-display)' }}>
+            liike paino x toistot [+extra] [rir N] [oikea/vasen]
+          </span>
+        </p>
+      </div>
 
-      {/* Päivämäärä + nimi rinnakkain */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+      <div className="slide-up slide-up-2">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '0.7rem',
+              letterSpacing: '0.1em',
+              color: 'var(--muted)',
+            }}>
+              PÄIVÄMÄÄRÄ
+            </label>
+            <div style={{ display: 'flex', gap: 4 }}>
+              {[
+                { label: 'TÄNÄÄN', days: 0 },
+                { label: 'EILEN', days: 1 },
+                { label: '2 PV', days: 2 },
+                { label: '3 PV', days: 3 },
+              ].map(({ label, days }) => {
+                const iso = quickDate(days);
+                return (
+                  <button
+                    key={label}
+                    onClick={() => setDate(iso)}
+                    style={{
+                      flex: 1,
+                      padding: '8px 2px',
+                      background: date === iso ? 'var(--accent)' : 'var(--surface2)',
+                      color: date === iso ? '#000' : 'var(--muted)',
+                      border: `1px solid ${date === iso ? 'var(--accent)' : 'var(--border)'}`,
+                      borderRadius: 3,
+                      fontSize: '0.6rem',
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+            <input
+              type="date"
+              value={date}
+              onChange={e => setDate(e.target.value)}
+              onClick={e => e.target.showPicker()}
+              style={{ width: '100%', cursor: 'pointer' }}
+            />
+          </div>
 
-        {/* Päivämäärä */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <label style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: '0.7rem',
-            letterSpacing: '0.1em',
-            color: 'var(--muted)',
-          }}>
-            PÄIVÄMÄÄRÄ
-          </label>
-          {/* Pikavalinnat */}
-          <div style={{ display: 'flex', gap: 4 }}>
-            {[
-              { label: 'TÄNÄÄN', days: 0 },
-              { label: 'EILEN', days: 1 },
-              { label: '2 PV', days: 2 },
-              { label: '3 PV', days: 3 },
-            ].map(({ label, days }) => {
-              const iso = quickDate(days);
-              return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '0.7rem',
+              letterSpacing: '0.1em',
+              color: 'var(--muted)',
+            }}>
+              TREENIN NIMI (valinnainen)
+            </label>
+            <div style={{ display: 'flex', gap: 4 }}>
+              {['Yläkroppa', 'Alakroppa'].map(n => (
                 <button
-                  key={label}
-                  onClick={() => setDate(iso)}
+                  key={n}
+                  onClick={() => setName(n)}
                   style={{
                     flex: 1,
                     padding: '8px 2px',
-                    background: date === iso ? 'var(--accent)' : 'var(--surface2)',
-                    color: date === iso ? '#000' : 'var(--muted)',
-                    border: `1px solid ${date === iso ? 'var(--accent)' : 'var(--border)'}`,
+                    background: name === n ? 'var(--accent)' : 'var(--surface2)',
+                    color: name === n ? '#000' : 'var(--muted)',
+                    border: `1px solid ${name === n ? 'var(--accent)' : 'var(--border)'}`,
                     borderRadius: 3,
                     fontSize: '0.6rem',
                   }}
                 >
-                  {label}
+                  {n.toUpperCase()}
                 </button>
-              );
-            })}
+              ))}
+            </div>
+            <input
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="tai kirjoita nimi..."
+              style={{ width: '100%' }}
+            />
           </div>
-          {/* Manuaalinen kenttä vanhemmille päiville */}
-          <input
-            type="date"
-            value={date}
-            onChange={e => setDate(e.target.value)}
-            onClick={e => e.target.showPicker()}
-            style={{ width: '100%', cursor: 'pointer' }}
-          />
-        </div>
-
-        {/* Nimi */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <label style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: '0.7rem',
-            letterSpacing: '0.1em',
-            color: 'var(--muted)',
-          }}>
-            TREENIN NIMI (valinnainen)
-          </label>
-          {/* Nimipikavalinta */}
-          <div style={{ display: 'flex', gap: 4 }}>
-            {['Yläkroppa', 'Alakroppa',].map(n => (
-              <button
-                key={n}
-                onClick={() => setName(n)}
-                style={{
-                  flex: 1,
-                  padding: '8px 2px',
-                  background: name === n ? 'var(--accent)' : 'var(--surface2)',
-                  color: name === n ? '#000' : 'var(--muted)',
-                  border: `1px solid ${name === n ? 'var(--accent)' : 'var(--border)'}`,
-                  borderRadius: 3,
-                  fontSize: '0.6rem',
-                }}
-              >
-                {n.toUpperCase()}
-              </button>
-            ))}
-          </div>
-          <input
-            type="text"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            placeholder="tai kirjoita nimi..."
-            style={{ width: '100%' }}
-          />
         </div>
       </div>
 
-      <textarea
-        rows={12}
-        value={text}
-        onChange={e => setText(e.target.value)}
-        placeholder={EXAMPLE}
-        style={{
-          resize: 'vertical',
-          lineHeight: 1.8,
-          fontFamily: 'monospace',
-          fontSize: '0.85rem',
-        }}
-      />
+      <div className="slide-up slide-up-3">
+        <textarea
+          rows={12}
+          value={text}
+          onChange={e => setText(e.target.value)}
+          placeholder={EXAMPLE}
+          style={{
+            resize: 'vertical',
+            lineHeight: 1.8,
+            fontFamily: 'monospace',
+            fontSize: '0.85rem',
+          }}
+        />
+      </div>
 
-      <div style={{ display: 'flex', gap: 10 }}>
+      <div className="slide-up slide-up-4" style={{ display: 'flex', gap: 10 }}>
         <button
           onClick={handlePropose}
           disabled={loading || !text.trim()}
@@ -188,7 +188,10 @@ export default function Bulk() {
             fontSize: '0.9rem',
             borderRadius: 4,
             opacity: loading || !text.trim() ? 0.5 : 1,
+            transition: 'opacity 0.2s, transform 0.1s',
           }}
+          onMouseEnter={e => { if (!loading && text.trim()) e.target.style.transform = 'translateY(-1px)'; }}
+          onMouseLeave={e => e.target.style.transform = 'translateY(0)'}
         >
           {loading ? 'PARSITAAN...' : 'ANALYSOI →'}
         </button>
@@ -208,7 +211,7 @@ export default function Bulk() {
       </div>
 
       {error && (
-        <div style={{
+        <div className="slide-up slide-up-1" style={{
           padding: 16,
           background: '#1a0800',
           border: '1px solid var(--accent2)',
@@ -222,7 +225,7 @@ export default function Bulk() {
 
       {grouped && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{
+          <div className="slide-up slide-up-1" style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -236,30 +239,26 @@ export default function Bulk() {
               EHDOTUS — {proposals.length} SETTIÄ / {Object.keys(grouped).length} LIIKETTÄ
             </p>
             <div style={{ textAlign: 'right' }}>
-              <span style={{
-                fontSize: '0.8rem',
-                color: 'var(--text)',
-                fontFamily: 'var(--font-display)',
-              }}>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text)', fontFamily: 'var(--font-display)' }}>
                 {name || '—'}
               </span>
-              <span style={{
-                fontSize: '0.75rem',
-                color: 'var(--muted)',
-                marginLeft: 8,
-              }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--muted)', marginLeft: 8 }}>
                 {date}
               </span>
             </div>
           </div>
 
-          {Object.entries(grouped).map(([ex, sets]) => (
-            <div key={ex} style={{
-              padding: '14px 16px',
-              background: 'var(--surface)',
-              border: '1px solid var(--border)',
-              borderRadius: 4,
-            }}>
+          {Object.entries(grouped).map(([ex, sets], idx) => (
+            <div
+              key={ex}
+              className={`slide-up slide-up-${Math.min(idx + 2, 5)}`}
+              style={{
+                padding: '14px 16px',
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                borderRadius: 4,
+              }}
+            >
               <p style={{
                 fontFamily: 'var(--font-display)',
                 fontSize: '0.75rem',
@@ -281,12 +280,8 @@ export default function Bulk() {
                     fontWeight: 600,
                   }}>
                     {s.weight}kg × {s.reps}
-                    {s.extra_reps > 0 && (
-                      <span style={{ color: 'var(--accent2)' }}> +{s.extra_reps}</span>
-                    )}
-                    {s.rir != null && (
-                      <span style={{ color: 'var(--muted)', fontWeight: 400 }}> R{s.rir}</span>
-                    )}
+                    {s.extra_reps > 0 && <span style={{ color: 'var(--accent2)' }}> +{s.extra_reps}</span>}
+                    {s.rir != null && <span style={{ color: 'var(--muted)', fontWeight: 400 }}> R{s.rir}</span>}
                     {s.side && (
                       <span style={{ color: 'var(--muted)', fontWeight: 400 }}>
                         {s.side === 'right' ? ' →' : ' ←'}
@@ -297,13 +292,13 @@ export default function Bulk() {
               </div>
               {sets.some(s => s.exercise_match === 'fuzzy') && (
                 <p style={{ fontSize: '0.7rem', color: 'var(--accent2)', marginTop: 6 }}>
-                  ⚠ Liike tulkittu fuzzy-matchilla
+                  Liike tulkittu fuzzy-matchilla
                 </p>
               )}
             </div>
           ))}
 
-          <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+          <div className="slide-up slide-up-5" style={{ display: 'flex', gap: 10, marginTop: 4 }}>
             <button
               onClick={handleConfirm}
               disabled={loading}
@@ -314,9 +309,12 @@ export default function Bulk() {
                 color: '#000',
                 borderRadius: 4,
                 fontSize: '0.9rem',
+                transition: 'transform 0.1s',
               }}
+              onMouseEnter={e => e.target.style.transform = 'translateY(-1px)'}
+              onMouseLeave={e => e.target.style.transform = 'translateY(0)'}
             >
-              ✓ TALLENNA {proposals.length} SETTIÄ
+              TALLENNA {proposals.length} SETTIÄ
             </button>
             <button
               onClick={() => setProposals(null)}
@@ -335,7 +333,7 @@ export default function Bulk() {
       )}
 
       {results && (
-        <div style={{
+        <div className="slide-up slide-up-1" style={{
           padding: 16,
           background: '#001a0d',
           border: '1px solid var(--success)',
@@ -343,7 +341,7 @@ export default function Bulk() {
           color: 'var(--success)',
           fontSize: '0.9rem',
         }}>
-          ✓ Tallennettu {results.saved} settiä
+          Tallennettu {results.saved} settiä
           {results.name && (
             <span style={{ color: 'var(--text)', marginLeft: 6 }}>— {results.name}</span>
           )}

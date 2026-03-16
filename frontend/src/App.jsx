@@ -15,7 +15,7 @@ export default function App() {
   const [page, setPage] = useState('DASHBOARD');
 
   return (
-    <div style={{ maxWidth: 760, margin: '0 auto', padding: '0 16px' }}>
+    <div style={{ maxWidth: 'min(1100px, 95vw)', margin: '0 auto', padding: '0 clamp(16px, 3vw, 32px)' }}>
       <header>
         <div style={{
           display: 'flex',
@@ -23,6 +23,7 @@ export default function App() {
           alignItems: 'center',
           padding: '16px 0',
         }}>
+
           {/* Logo */}
           <h1
             onClick={() => setPage('DASHBOARD')}
@@ -31,12 +32,25 @@ export default function App() {
               fontSize: '1.6rem',
               fontWeight: 700,
               letterSpacing: '0.08em',
-              color: 'var(--accent)',
               cursor: 'pointer',
               userSelect: 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              lineHeight: 1,
+              gap: 5,
             }}
           >
-            GYM<span style={{ color: 'var(--text)' }}>NOTES</span>
+            <span>
+              <span style={{ color: 'var(--accent)' }}>GYM</span>
+              <span style={{ color: 'var(--text)' }}>NOTES</span>
+            </span>
+            <span style={{
+              display: 'block',
+              height: 2,
+              width: '100%',
+              background: 'linear-gradient(90deg, var(--accent), transparent)',
+              borderRadius: 1,
+            }} />
           </h1>
 
           {/* Nav */}
@@ -70,7 +84,7 @@ export default function App() {
         </div>
       </header>
 
-      <main style={{ padding: '32px 0' }}>
+      <main style={{ padding: '32px 0', position: 'relative', zIndex: 1 }}>
         {page === 'DASHBOARD' && <Dashboard />}
         {page === 'BULK' && <Bulk />}
         {page === 'HISTORY' && <History />}

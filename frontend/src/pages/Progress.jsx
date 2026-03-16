@@ -131,10 +131,7 @@ function MonthlyChart({ data, isBodyweight }) {
   if (!data || data.length < 2) return null;
 
   return (
-    <canvas
-      ref={canvasRef}
-      style={{ width: '100%', height: 140, display: 'block' }}
-    />
+    <canvas ref={canvasRef} style={{ width: '100%', height: 140, display: 'block' }} />
   );
 }
 
@@ -182,7 +179,6 @@ function MonthlyComparison({ data, isBodyweight }) {
               }}>
                 {m.month}
               </span>
-
               <div>
                 <div style={{ fontSize: '0.6rem', color: 'var(--muted)', fontFamily: 'var(--font-display)' }}>
                   {isBodyweight ? 'SETTIÄ' : 'PARAS PAINO'}
@@ -200,12 +196,10 @@ function MonthlyComparison({ data, isBodyweight }) {
                   )}
                 </div>
               </div>
-
               <div>
                 <div style={{ fontSize: '0.6rem', color: 'var(--muted)', fontFamily: 'var(--font-display)' }}>SESSIOITA</div>
                 <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem' }}>{m.sessions}</div>
               </div>
-
               <div>
                 <div style={{ fontSize: '0.6rem', color: 'var(--muted)', fontFamily: 'var(--font-display)' }}>VOLYYMI</div>
                 <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem' }}>
@@ -243,66 +237,90 @@ export default function Progress() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 40 }}>
 
-      <label style={{ fontFamily: 'var(--font-display)', fontSize: '0.8rem', letterSpacing: '0.1em', color: 'var(--muted)' }}>
-        VALITSE LIIKE
-      </label>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-        {exercises.map(ex => (
-          <button key={ex} onClick={() => load(ex)} style={{
-            padding: '8px 16px',
-            background: selected === ex ? 'var(--accent)' : 'var(--surface)',
-            color: selected === ex ? '#000' : 'var(--text)',
-            border: `1px solid ${selected === ex ? 'var(--accent)' : 'var(--border)'}`,
-            borderRadius: 3, fontSize: '0.8rem',
-          }}>{ex}</button>
-        ))}
+      {/* Liikkeen valinta */}
+      <div className="slide-up slide-up-1">
+        <label style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: '0.8rem',
+          letterSpacing: '0.1em',
+          color: 'var(--muted)',
+          display: 'block',
+          marginBottom: 10,
+        }}>
+          VALITSE LIIKE
+        </label>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {exercises.map(ex => (
+            <button
+              key={ex}
+              onClick={() => load(ex)}
+              style={{
+                padding: '8px 16px',
+                background: selected === ex ? 'var(--accent)' : 'var(--surface)',
+                color: selected === ex ? '#000' : 'var(--text)',
+                border: `1px solid ${selected === ex ? 'var(--accent)' : 'var(--border)'}`,
+                borderRadius: 3,
+                fontSize: '0.8rem',
+                transition: 'background 0.15s, color 0.15s, transform 0.1s',
+              }}
+              onMouseEnter={e => { if (selected !== ex) e.currentTarget.style.transform = 'translateY(-1px)'; }}
+              onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+            >
+              {ex}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {loading && <p style={{ color: 'var(--muted)' }}>Ladataan...</p>}
+      {loading && (
+        <p className="slide-up slide-up-2" style={{ color: 'var(--muted)' }}>Ladataan...</p>
+      )}
 
       {s && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div className="slide-up slide-up-2" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <TrendBadge pct={s.change_vs_prev_pct} label="e1RM" />
             <TrendBadge pct={s.volume_trend_pct} label="volyymi" />
           </div>
 
-          {s.is_bodyweight ? (
-            <>
-              <div style={{ padding: '10px 14px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 4, fontSize: '0.75rem', color: 'var(--muted)' }}>
-                Kehonpainoliike — seurataan toistomäärää
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
-                <StatCard label="VIIMEISIN PARAS" value={`${s.last_best_reps ?? '—'} toistoa`} />
-                <StatCard label="ALL TIME PARAS" value={`${s.all_time_best_reps ?? '—'} toistoa`} />
-                <StatCard label="SESSIOITA" value={s.total_sessions} />
-              </div>
-              {s.all_time_best_weight && (
-                <StatCard label="PARAS LISÄPAINO" value={`${s.all_time_best_weight} kg`} sub="korkein nostettu lisäpaino" />
-              )}
-            </>
-          ) : (
-            <>
-              <div>
+          <div className="slide-up slide-up-3">
+            {s.is_bodyweight ? (
+              <>
+                <div style={{ padding: '10px 14px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 4, fontSize: '0.75rem', color: 'var(--muted)', marginBottom: 10 }}>
+                  Kehonpainoliike — seurataan toistomäärää
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+                  <StatCard label="VIIMEISIN PARAS" value={`${s.last_best_reps ?? '—'} toistoa`} />
+                  <StatCard label="ALL TIME PARAS" value={`${s.all_time_best_reps ?? '—'} toistoa`} />
+                  <StatCard label="SESSIOITA" value={s.total_sessions} />
+                </div>
+                {s.all_time_best_weight && (
+                  <div style={{ marginTop: 10 }}>
+                    <StatCard label="PARAS LISÄPAINO" value={`${s.all_time_best_weight} kg`} sub="korkein nostettu lisäpaino" />
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
                 <p style={{ fontFamily: 'var(--font-display)', fontSize: '0.7rem', letterSpacing: '0.1em', color: 'var(--muted)', marginBottom: 8 }}>VOIMA</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
                   <StatCard label="VIIMEISIN e1RM" value={`${s.last_best_e1rm?.toFixed(1)} kg`} sub="arvioitu 1RM" />
                   <StatCard label="PARAS e1RM KOSKAAN" value={`${s.all_time_best_e1rm?.toFixed(1)} kg`} />
                   <StatCard label="PARAS PAINO" value={`${s.all_time_best_weight} kg`} sub="korkein nostettu" />
                 </div>
-              </div>
-              {s.all_time_best_set && (
-                <div style={{ padding: '12px 16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 4, fontSize: '0.8rem', color: 'var(--muted)' }}>
-                  Paras setti: <span style={{ color: 'var(--text)' }}>
-                    {s.all_time_best_set.weight}kg × {s.all_time_best_set.reps} toistoa
-                  </span> — tehty <span style={{ color: 'var(--text)' }}>{s.all_time_best_set.date}</span>
-                </div>
-              )}
-            </>
-          )}
+                {s.all_time_best_set && (
+                  <div style={{ padding: '12px 16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 4, fontSize: '0.8rem', color: 'var(--muted)', marginTop: 10 }}>
+                    Paras setti: <span style={{ color: 'var(--text)' }}>
+                      {s.all_time_best_set.weight}kg × {s.all_time_best_set.reps} toistoa
+                    </span> — tehty <span style={{ color: 'var(--text)' }}>{s.all_time_best_set.date}</span>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
 
-          <div>
+          <div className="slide-up slide-up-4">
             <p style={{ fontFamily: 'var(--font-display)', fontSize: '0.7rem', letterSpacing: '0.1em', color: 'var(--muted)', marginBottom: 8 }}>VOLYYMI & FREKVENSSI</p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
               <StatCard label="KOKONAISVOLYYMI" value={`${s.last_volume?.toFixed(0)} ${s.is_bodyweight ? 'toistoa' : 'kg'}`} sub="paino × toistot yhteensä (kaikki setit)" />
@@ -312,7 +330,7 @@ export default function Progress() {
           </div>
 
           {s.last_avg_rir != null && (
-            <div>
+            <div className="slide-up slide-up-5">
               <p style={{ fontFamily: 'var(--font-display)', fontSize: '0.7rem', letterSpacing: '0.1em', color: 'var(--muted)', marginBottom: 8 }}>INTENSITEETTI</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <StatCard
@@ -341,7 +359,7 @@ export default function Progress() {
           )}
 
           {(s.side_best?.right || s.side_best?.left) && (
-            <div>
+            <div className="slide-up slide-up-5">
               <p style={{ fontFamily: 'var(--font-display)', fontSize: '0.7rem', letterSpacing: '0.1em', color: 'var(--muted)', marginBottom: 8 }}>PARAS PER KÄSI</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 {s.side_best.right && <StatCard label="OIKEA KÄSI →" value={`${s.side_best.right.weight} kg`} sub={`× ${s.side_best.right.reps} toistoa — ${s.side_best.right.date}`} />}
@@ -351,19 +369,18 @@ export default function Progress() {
           )}
 
           {s.plateau?.plateau && (
-            <div style={{ padding: 14, background: '#1a0800', border: '1px solid var(--accent2)', borderRadius: 4, color: 'var(--accent2)', fontSize: '0.85rem' }}>
+            <div className="slide-up slide-up-5" style={{ padding: 14, background: '#1a0800', border: '1px solid var(--accent2)', borderRadius: 4, color: 'var(--accent2)', fontSize: '0.85rem' }}>
               PLATEAU HAVAITTU — {s.plateau.window} viimeistä sessiota ilman progressia
             </div>
           )}
 
           {data.monthly_comparison && (
-            <MonthlyComparison
-              data={data.monthly_comparison}
-              isBodyweight={s.is_bodyweight}
-            />
+            <div className="slide-up slide-up-5">
+              <MonthlyComparison data={data.monthly_comparison} isBodyweight={s.is_bodyweight} />
+            </div>
           )}
 
-          <div>
+          <div className="slide-up slide-up-5">
             <p style={{ fontFamily: 'var(--font-display)', fontSize: '0.7rem', letterSpacing: '0.1em', color: 'var(--muted)', marginBottom: 10 }}>SESSIOHISTORIA</p>
             {data.timeline.map((t, i) => {
               const prevT = data.timeline[i - 1];
@@ -372,8 +389,12 @@ export default function Progress() {
                 : null;
               return (
                 <div key={t.date} style={{
-                  padding: '12px 14px', marginBottom: 4,
-                  background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 3,
+                  padding: '12px 14px',
+                  marginBottom: 4,
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 3,
+                  transition: 'border-color 0.15s',
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                     <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}>{t.date}</span>
