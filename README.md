@@ -1,6 +1,6 @@
 # GymNotes
 
-Personal gym tracking and analytics application — log workouts, track personal records and visualize training progress over time.
+Personal gym tracking and analytics application for logging workouts and visualizing training progress over time.
 
 Built by Honar Abdi
 
@@ -12,7 +12,7 @@ Built by Honar Abdi
 
 ## What is this?
 
-I have been going to the gym regularly for over a year and wanted a proper way to track my progress. Instead of spreadsheets or generic fitness apps, I built exactly what I needed — a personal analytics tool that turns raw workout data into meaningful insights.
+I have been going to the gym regularly for over a year and wanted a proper way to track my progress. Instead of spreadsheets or generic fitness apps, I built exactly what I needed. A personal analytics tool that turns raw workout data into meaningful insights.
 
 ---
 
@@ -30,7 +30,7 @@ I have been going to the gym regularly for over a year and wanted a proper way t
 
 ## Features
 
-**Dashboard**
+Dashboard
 - Weekly training goal with progress bar
 - 28-day calendar with color-coded session types
 - Last session summary including sets, exercises and best set
@@ -38,18 +38,18 @@ I have been going to the gym regularly for over a year and wanted a proper way t
 - Weekly set volume chart for the last 6 weeks
 - Personal records per exercise with sparkline trend charts
 
-**Workout Logging**
+Workout Logging
 - Natural language input, type workouts line by line
 - Format: Exercise weight x reps
 - Quick-select buttons for session name and date
 - Preview and confirm before saving to database
 
-**History**
+History
 - Full session history sorted by date
 - Expandable session details with all sets
 - Delete individual sets or entire sessions
 
-**Progress**
+Progress
 - Per-exercise progress history
 - Estimated 1 rep max trend using the Epley formula
 - Monthly comparison chart
@@ -113,6 +113,8 @@ gym-agent/
 │       ├── App.jsx
 │       ├── index.css
 │       └── main.jsx
+├── gym.sqlite
+└── query.sql
 ```
 
 ---
@@ -121,7 +123,7 @@ gym-agent/
 
 Requirements: Python 3.10 or higher and Node.js 18 or higher.
 
-**Backend**
+Backend
 ```
 cd gym-agent
 python -m venv venv
@@ -130,7 +132,7 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-**Frontend**
+Frontend
 ```
 cd gym-agent/frontend
 npm install
@@ -153,21 +155,21 @@ All analytics are computed at query time from raw set data.
 
 ## Key Technical Decisions
 
-**SQLite over PostgreSQL** — single user personal project, zero infrastructure overhead, database is just a file.
+SQLite over PostgreSQL. This is a single user personal project with no infrastructure overhead and the database is just a file.
 
-**Custom Canvas charts** — all visualizations built from scratch using the Canvas API instead of a chart library. Full control over appearance and behavior.
+Custom Canvas charts. All visualizations are built from scratch using the Canvas API instead of a chart library which gives full control over appearance and behavior.
 
-**Natural language input** — logging workouts by typing is faster than filling out forms. The parser handles fuzzy matching for exercise names.
+Natural language input. Logging workouts by typing is faster than filling out forms and the parser handles fuzzy matching for exercise names.
 
-**Epley formula for e1RM** — weight multiplied by 1 plus reps divided by 30 gives an estimated 1 rep max used for progress tracking and personal records.
+Epley formula for e1RM. The formula is weight multiplied by 1 plus reps divided by 30 which gives an estimated 1 rep max used for progress tracking and personal records.
 
 ---
 
 ## What I Learned
 
-Building this project end to end taught me how to design and connect all layers of a full-stack application, from database schema to REST API to frontend state management. The most interesting technical challenge was building the analytics layer: aggregating time-series workout data into meaningful metrics like monthly comparisons, plateau detection and personal records.
+Building this project end to end taught me how to design and connect all layers of a full-stack application from database schema to REST API to frontend state management. The most interesting technical challenge was building the analytics layer by aggregating time-series workout data into meaningful metrics like monthly comparisons, plateau detection and personal records.
 
-Working with the Canvas API for custom charts was also new territory, handling device pixel ratios, resize observers and smooth animations without any library.
+Working with the Canvas API for custom charts was also new territory. Handling device pixel ratios, resize observers and smooth animations without any library required careful implementation.
 
 ---
 
