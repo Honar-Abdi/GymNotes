@@ -35,6 +35,7 @@ I have been going to the gym regularly for over a year and wanted a proper way t
 ## Features
 
 ### Dashboard
+
 - Weekly training goal with progress bar
 - 28-day calendar with color-coded session types (upper body, lower body, bodyweight, cardio)
 - Last session summary including sets, exercises and best set
@@ -43,6 +44,7 @@ I have been going to the gym regularly for over a year and wanted a proper way t
 - Personal records per exercise with sparkline trend charts
 
 ### Workout Logging
+
 - Natural language bulk input, type workouts line by line
 - Format: `Exercise weight x reps [+extrareps] [rir N] [right/left]`
 - Bodyweight exercises supported with format: `Exercise x reps`
@@ -51,11 +53,13 @@ I have been going to the gym regularly for over a year and wanted a proper way t
 - Preview and confirm before saving to database
 
 ### Cardio
+
 - Log aerobic sessions with duration and distance
 - Auto-calculated speed in km/h with live preview
 - Separate tab in workout logging
 
 ### History
+
 - Full session history sorted by date
 - Filter by session type: upper body, lower body, bodyweight, cardio
 - Expandable session details with all sets
@@ -63,9 +67,10 @@ I have been going to the gym regularly for over a year and wanted a proper way t
 - Cardio sessions shown inline with distance, duration and speed
 
 ### Progress
-- Per-exercise analytics with estimated 1 rep max trend (Epley formula)
+
+- Per-exercise analytics with best weight and volume trend charts
 - Bodyweight exercise tracking by rep count and added weight
-- Monthly comparison chart with best weight and volume
+- 3-session moving average for strength and volume trends
 - Volume and frequency statistics
 - RIR intensity tracking
 - Left/right side tracking for unilateral exercises
@@ -86,6 +91,7 @@ I have been going to the gym regularly for over a year and wanted a proper way t
 ---
 
 ## Project Structure
+
 ```
 gym-agent/
 ├── app/
@@ -173,7 +179,7 @@ npm install
 npm run dev
 ```
 
-App runs at http://localhost:5173
+App runs at <http://localhost:5173>
 
 ---
 
@@ -219,6 +225,6 @@ Working with the Canvas API for custom charts was also new territory. Handling d
 - Mobile optimized layout
 - Goal setting per exercise with progress bar toward target weight
 
---- 
+---
 
 **Built for personal use. Real data, real workouts. Actively maintained.**
