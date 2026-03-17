@@ -14,6 +14,14 @@ def pct_change(new: float, old: float) -> Optional[float]:
     return (new - old) / old * 100.0
 
 
+def moving_avg_e1rm(timeline: list, window: int = 3) -> Optional[float]:
+    """Laskee viimeisten N session e1RM keskiarvon."""
+    recent = [s["best_e1rm"] for s in timeline[-window:] if s["best_e1rm"] > 0]
+    if not recent:
+        return None
+    return sum(recent) / len(recent)
+
+
 def detect_plateau(timeline: List[dict], window: int = 3) -> dict:
     if len(timeline) < window:
         return {"plateau": False, "reason": "not_enough_data"}
@@ -27,6 +35,7 @@ def is_bodyweight_exercise(sets: list) -> bool:
     zero = sum(1 for s in sets if float(s["weight"] or 0) <= 0)
     return zero > len(sets) / 2
 
+
 def build_monthly_comparison(timeline: list) -> list:
     from datetime import datetime
     monthly = defaultdict(lambda: {
@@ -38,7 +47,7 @@ def build_monthly_comparison(timeline: list) -> list:
     })
 
     for session in timeline:
-        month = session["date"][:7]  # "2026-03"
+        month = session["date"][:7]
         monthly[month]["sessions"] += 1
         monthly[month]["total_volume"] += session["total_volume"]
         monthly[month]["total_sets"] += session["set_count"]
@@ -72,6 +81,7 @@ def build_monthly_comparison(timeline: list) -> list:
         })
 
     return result
+
 
 def build_progress_response(exercise_name: str, rows) -> Dict[str, Any]:
     if not rows:
@@ -169,15 +179,26 @@ def build_progress_response(exercise_name: str, rows) -> Dict[str, Any]:
     last = timeline[-1]
     prev = timeline[-2] if len(timeline) >= 2 else None
 
+    # --- Trendi: 3 session liukuva keskiarvo vs edellinen 3 session liukuva keskiarvo ---
     change_vs_prev_pct = None
-    if prev and not is_bw:
-        change_vs_prev_pct = pct_change(last["best_e1rm"], prev["best_e1rm"])
-        if change_vs_prev_pct is not None:
-            change_vs_prev_pct = round(change_vs_prev_pct, 2)
+    if not is_bw and len(timeline) >= 2:
+        current_avg = moving_avg_e1rm(timeline, window=3)
+        # Edellinen ikkuna — kaikki paitsi viimeisin
+        prev_avg = moving_avg_e1rm(timeline[:-1], window=3)
+        if current_avg and prev_avg:
+            change_vs_prev_pct = round(pct_change(current_avg, prev_avg), 2)
+        elif prev and not is_bw:
+            # Fallback: sessio-sessio jos dataa liian vähän
+            change_vs_prev_pct = round(pct_change(last["best_e1rm"], prev["best_e1rm"]), 2) if prev["best_e1rm"] > 0 else None
 
+    # --- Volyymi trendi: 3 session liukuva keskiarvo ---
     volume_trend = None
     if len(timeline) >= 2:
-        vol_change = pct_change(last["total_volume"], timeline[-2]["total_volume"])
+        recent_vols = [s["total_volume"] for s in timeline[-3:]]
+        prev_vols = [s["total_volume"] for s in timeline[-4:-1]] if len(timeline) >= 4 else [timeline[-2]["total_volume"]]
+        current_vol_avg = sum(recent_vols) / len(recent_vols)
+        prev_vol_avg = sum(prev_vols) / len(prev_vols)
+        vol_change = pct_change(current_vol_avg, prev_vol_avg)
         volume_trend = round(vol_change, 2) if vol_change is not None else None
 
     avg_days_between = None
