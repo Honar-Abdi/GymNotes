@@ -1,6 +1,7 @@
 import StatCard from './StatCard';
+import BestWeightChart from './BestWeightChart';
 
-export default function BodyweightStats({ s }) {
+export default function BodyweightStats({ s, timeline }) {
   return (
     <>
       <div style={{ padding: '10px 14px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 4, fontSize: '0.75rem', color: 'var(--muted)', marginBottom: 10 }}>
@@ -16,6 +17,7 @@ export default function BodyweightStats({ s }) {
           <StatCard label="PARAS LISÄPAINO" value={`${s.all_time_best_weight} kg`} sub="korkein nostettu lisäpaino" />
         </div>
       )}
+      <BestWeightChart timeline={timeline} isBodyweight={true} />
     </>
   );
 }
