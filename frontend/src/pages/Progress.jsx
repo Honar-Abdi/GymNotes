@@ -6,7 +6,6 @@ import BodyweightStats from '../components/progress/BodyweightStats';
 import VolumeStats from '../components/progress/VolumeStats';
 import IntensityStats from '../components/progress/IntensityStats';
 import SideStats from '../components/progress/SideStats';
-import MonthlyComparison from '../components/progress/MonthlyComparison';
 import SessionHistory from '../components/progress/SessionHistory';
 import CardioStats from '../components/progress/CardioStats';
 
@@ -65,7 +64,6 @@ export default function Progress() {
         ))}
       </div>
 
-      {/* ---- TREENI TAB ---- */}
       {tab === 'treeni' && (
         <>
           <div className="slide-up slide-up-1">
@@ -104,7 +102,10 @@ export default function Progress() {
                 <TrendBadge pct={s.volume_trend_pct} label="volyymi" />
               </div>
               <div className="slide-up slide-up-3">
-                {s.is_bodyweight ? <BodyweightStats s={s} /> : <StrengthStats s={s} />}
+                {s.is_bodyweight
+                  ? <BodyweightStats s={s} timeline={data.timeline} />
+                  : <StrengthStats s={s} timeline={data.timeline} />
+                }
               </div>
               <div className="slide-up slide-up-4"><VolumeStats s={s} /></div>
               <div className="slide-up slide-up-5"><IntensityStats s={s} /></div>
@@ -112,11 +113,6 @@ export default function Progress() {
               {s.plateau?.plateau && (
                 <div className="slide-up slide-up-5" style={{ padding: 14, background: '#1a0800', border: '1px solid var(--accent2)', borderRadius: 4, color: 'var(--accent2)', fontSize: '0.85rem' }}>
                   PLATEAU HAVAITTU — {s.plateau.window} viimeistä sessiota ilman progressia
-                </div>
-              )}
-              {data.monthly_comparison && (
-                <div className="slide-up slide-up-5">
-                  <MonthlyComparison data={data.monthly_comparison} isBodyweight={s.is_bodyweight} />
                 </div>
               )}
               <div className="slide-up slide-up-5">
@@ -127,7 +123,6 @@ export default function Progress() {
         </>
       )}
 
-      {/* ---- AEROBINEN TAB ---- */}
       {tab === 'cardio' && (
         <div className="slide-up slide-up-2">
           {cardioLoading && <p style={{ color: 'var(--muted)' }}>Ladataan...</p>}
