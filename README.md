@@ -26,56 +26,51 @@ I have been going to the gym regularly for over a year and wanted a proper way t
 |---------|----------|
 | ![History](screenshots/history.png) | ![Progress](screenshots/progress.png) |
 
-| Cardio Logging | Cardio Progress |
+| Cardio Progress | Weight Tracking |
 |----------------|----------------|
-| ![Cardio Logging](screenshots/bulk_cardio.png) | ![Cardio Progress](screenshots/progress_cardio.png) |
+| ![Cardio Progress](screenshots/progress_cardio.png) | ![Weight Tracking](screenshots/progress_weight.png) |
 
 ---
 
 ## Features
 
 ### Dashboard
-
 - Weekly training goal with progress bar
 - 28-day calendar with color-coded session types (upper body, lower body, bodyweight, cardio)
-- Last session summary including sets, exercises and best set
+- Last session summary with volume comparison against previous same session type
 - Training split breakdown for the current month
 - Weekly set volume chart for the last 6 weeks
-- Personal records per exercise with sparkline trend charts
+- Personal records per exercise with sparkline trend charts sorted by progression
 
 ### Workout Logging
-
-- Natural language bulk input, type workouts line by line
+- Natural language bulk input, one set per line
 - Format: `Exercise weight x reps [+extrareps] [rir N] [right/left]`
-- Bodyweight exercises supported with format: `Exercise x reps`
+- Bodyweight exercises supported: `Exercise x reps`
 - Quick-select buttons for session type and date
-- Dynamic example per session type (upper body, lower body, bodyweight)
-- Preview and confirm before saving to database
+- Dynamic examples per session type
+- Preview and confirm before saving
 
 ### Cardio
-
 - Log aerobic sessions with duration and distance
 - Auto-calculated speed in km/h with live preview
-- Separate tab in workout logging
 
 ### History
-
 - Full session history sorted by date
 - Filter by session type: upper body, lower body, bodyweight, cardio
-- Expandable session details with all sets
-- Delete individual sets or entire sessions
-- Cardio sessions shown inline with distance, duration and speed
+- Expandable session details
+- Edit session name or add sets to existing sessions
+- Delete entire sessions
 
 ### Progress
-
 - Per-exercise analytics with best weight and volume trend charts
-- Bodyweight exercise tracking by rep count and added weight
 - 3-session moving average for strength and volume trends
+- Bodyweight exercise tracking by rep count and added weight
 - Volume and frequency statistics
 - RIR intensity tracking
 - Left/right side tracking for unilateral exercises
 - Plateau detection
-- Cardio analytics tab with speed trend chart and monthly volume
+- Cardio analytics with speed trend chart and monthly volume
+- Body weight tracking with trend chart and weekly and monthly change
 
 ---
 
@@ -91,19 +86,19 @@ I have been going to the gym regularly for over a year and wanted a proper way t
 ---
 
 ## Project Structure
-
 ```
 gym-agent/
 ├── app/
 │   ├── repositories/
-│   │   └── repo.py
+│   │   ├── cardio_repo.py
+│   │   ├── weight_repo.py
+│   │   └── workout_repo.py
 │   ├── routers/
 │   │   ├── analytics.py
 │   │   ├── bulk.py
 │   │   ├── cardio.py
-│   │   ├── chat.py
-│   │   ├── confirm.py
 │   │   ├── dashboard.py
+│   │   ├── weight.py
 │   │   └── workouts.py
 │   ├── schemas/
 │   │   └── models.py
@@ -118,6 +113,7 @@ gym-agent/
 │       ├── components/
 │       │   ├── bulk/
 │       │   │   ├── AerobinenForm.jsx
+│       │   │   ├── PainoForm.jsx
 │       │   │   └── TreeniForm.jsx
 │       │   ├── dashboard/
 │       │   │   ├── LastSession.jsx
@@ -132,22 +128,21 @@ gym-agent/
 │       │   │   ├── CardioRow.jsx
 │       │   │   └── SessionRow.jsx
 │       │   └── progress/
+│       │       ├── BestWeightChart.jsx
 │       │       ├── BodyweightStats.jsx
 │       │       ├── CardioStats.jsx
 │       │       ├── IntensityStats.jsx
-│       │       ├── MonthlyChart.jsx
-│       │       ├── MonthlyComparison.jsx
 │       │       ├── SessionHistory.jsx
 │       │       ├── SideStats.jsx
 │       │       ├── StatCard.jsx
 │       │       ├── StrengthStats.jsx
 │       │       ├── TrendBadge.jsx
-│       │       └── VolumeStats.jsx
+│       │       ├── VolumeStats.jsx
+│       │       └── WeightStats.jsx
 │       ├── pages/
 │       │   ├── Bulk.jsx
 │       │   ├── Dashboard.jsx
 │       │   ├── History.jsx
-│       │   ├── Log.jsx
 │       │   └── Progress.jsx
 │       ├── api.js
 │       ├── App.jsx
@@ -179,7 +174,7 @@ npm install
 npm run dev
 ```
 
-App runs at <http://localhost:5173>
+App runs at http://localhost:5173
 
 ---
 
@@ -188,6 +183,7 @@ App runs at <http://localhost:5173>
 workout_session (id, date, name)
 set_entry       (id, session_id, exercise, set_index, weight, reps, extra_reps, rir, side)
 cardio_entry    (id, session_id, type, duration_min, distance_km)
+weight_entry    (id, date, weight_kg)
 ```
 
 All analytics are computed at query time from raw set data.
@@ -204,7 +200,9 @@ All analytics are computed at query time from raw set data.
 
 **Epley formula for e1RM.** The formula is weight multiplied by 1 plus reps divided by 30 which gives an estimated 1 rep max used for progress tracking and personal records.
 
-**Separate cardio table.** Cardio sessions use a dedicated `cardio_entry` table instead of mixing with set-based training data. This keeps the data model clean and makes cardio analytics straightforward.
+**Separate tables per data type.** Cardio and body weight use dedicated tables instead of mixing with set-based training data. This keeps the data model clean and makes analytics straightforward.
+
+**Repository pattern.** Database logic is split into focused repository files per domain: workout, cardio and weight. Each file has a single responsibility.
 
 **Component architecture.** Pages are kept thin by extracting logical sections into focused components. Each component has a single responsibility which keeps files short and easy to maintain.
 
@@ -220,11 +218,10 @@ Working with the Canvas API for custom charts was also new territory. Handling d
 
 ## Planned Features
 
-- Morning weight tracking to correlate body weight with training performance
 - Muscle group tagging per exercise for volume distribution analysis
 - Mobile optimized layout
 - Goal setting per exercise with progress bar toward target weight
 
 ---
 
-**Built for personal use. Real data, real workouts. Actively maintained.**
+> **Built for personal use. Real data, real workouts. Actively maintained.**
