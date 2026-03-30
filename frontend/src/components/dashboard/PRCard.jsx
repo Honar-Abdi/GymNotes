@@ -154,7 +154,8 @@ export default function PRCard({ pr, index = 0 }) {
       )}
 
       <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: 2 }}>
-        {weight}kg × {reps} — {date}
+        <span style={{ color: 'var(--text)', fontWeight: 600 }}>{weight}kg × {reps}</span>
+        {' '}— {date}
       </p>
     </div>
   );

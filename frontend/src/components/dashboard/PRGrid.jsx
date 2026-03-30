@@ -19,8 +19,8 @@ export default function PRGrid({ prs }) {
         gridTemplateColumns: '1fr 1fr',
         gap: 10,
       }}>
-        {prs.map(pr => (
-          <PRCard key={pr.exercise} pr={pr} />
+        {prs.filter(pr => pr.trend !== 'down').map((pr, idx) => (
+          <PRCard key={pr.exercise} pr={pr} index={idx} />
         ))}
       </div>
     </div>
