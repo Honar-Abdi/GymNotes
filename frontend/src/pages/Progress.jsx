@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getExercises, getProgress, getAllCardio } from '../api';
+import { getExercises, getProgress, getAllCardio, getAllWeights } from '../api';
 import TrendBadge from '../components/progress/TrendBadge';
 import StrengthStats from '../components/progress/StrengthStats';
 import BodyweightStats from '../components/progress/BodyweightStats';
@@ -8,8 +8,9 @@ import IntensityStats from '../components/progress/IntensityStats';
 import SideStats from '../components/progress/SideStats';
 import SessionHistory from '../components/progress/SessionHistory';
 import CardioStats from '../components/progress/CardioStats';
+import WeightStats from '../components/progress/WeightStats';
 
-const TABS = ['treeni', 'cardio'];
+const TABS = ['treeni', 'cardio', 'paino'];
 
 export default function Progress() {
   const [tab, setTab] = useState('treeni');
@@ -19,6 +20,8 @@ export default function Progress() {
   const [loading, setLoading] = useState(false);
   const [cardioData, setCardioData] = useState(null);
   const [cardioLoading, setCardioLoading] = useState(false);
+  const [weightData, setWeightData] = useState(null);
+  const [weightLoading, setWeightLoading] = useState(false);
 
   useEffect(() => {
     getExercises().then(setExercises);
@@ -29,7 +32,11 @@ export default function Progress() {
       setCardioLoading(true);
       getAllCardio().then(setCardioData).finally(() => setCardioLoading(false));
     }
-  }, [tab, cardioData]);
+    if (tab === 'paino' && !weightData) {
+      setWeightLoading(true);
+      getAllWeights().then(setWeightData).finally(() => setWeightLoading(false));
+    }
+  }, [tab, cardioData, weightData]);
 
   async function loadExercise(ex) {
     setSelected(ex); setData(null); setLoading(true);
@@ -53,17 +60,24 @@ export default function Progress() {
     transition: 'background 0.15s',
   });
 
+  const tabLabel = (t) => {
+    if (t === 'treeni') return 'TREENI';
+    if (t === 'cardio') return 'AEROBINEN';
+    return 'PAINO';
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 40 }}>
 
       <div className="slide-up slide-up-1" style={{ display: 'flex', gap: 8 }}>
         {TABS.map(t => (
           <button key={t} style={tabStyle(t)} onClick={() => setTab(t)}>
-            {t === 'treeni' ? 'TREENI' : 'AEROBINEN'}
+            {tabLabel(t)}
           </button>
         ))}
       </div>
 
+      {/* TREENI */}
       {tab === 'treeni' && (
         <>
           <div className="slide-up slide-up-1">
@@ -123,6 +137,7 @@ export default function Progress() {
         </>
       )}
 
+      {/* AEROBINEN */}
       {tab === 'cardio' && (
         <div className="slide-up slide-up-2">
           {cardioLoading && <p style={{ color: 'var(--muted)' }}>Ladataan...</p>}
@@ -130,6 +145,14 @@ export default function Progress() {
           {cardioData && cardioData.length === 0 && (
             <p style={{ color: 'var(--muted)' }}>Ei aerobisia kirjauksia vielä.</p>
           )}
+        </div>
+      )}
+
+      {/* PAINO */}
+      {tab === 'paino' && (
+        <div className="slide-up slide-up-2">
+          {weightLoading && <p style={{ color: 'var(--muted)' }}>Ladataan...</p>}
+          {weightData && <WeightStats data={weightData} />}
         </div>
       )}
 
