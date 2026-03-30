@@ -76,5 +76,15 @@ def init_db():
         )
         """)
 
+    # --- Migraatio: weight_entry ---
+    if not _table_exists(cursor, "weight_entry"):
+        cursor.execute("""
+        CREATE TABLE weight_entry (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date TEXT NOT NULL UNIQUE,
+            weight_kg REAL NOT NULL
+        )
+        """)
+
     conn.commit()
     conn.close()

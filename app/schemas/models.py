@@ -39,3 +39,16 @@ class CardioResponse(BaseModel):
     type: str
     duration_min: float
     distance_km: float
+
+
+# --- Kehonpaino ---
+
+class WeightCreate(BaseModel):
+    date: str = Field(..., min_length=1)  # "2026-03-30"
+    weight_kg: float = Field(..., gt=0)   # esim. 82.5
+
+
+class WeightResponse(BaseModel):
+    id: int
+    date: str
+    weight_kg: float
