@@ -1,10 +1,15 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import date
 import re
 
-from app.repositories import repo
+from app.repositories.workout_repo import (
+    fetch_exercises,
+    get_or_create_session_id,
+    next_set_index,
+    insert_set,
+)
 from app.services import parsing
 
 router = APIRouter(tags=["bulk"])
@@ -24,8 +29,8 @@ class BulkConfirmRequest(BaseModel):
 @router.post("/bulk/propose")
 def bulk_propose(payload: BulkProposeRequest):
     session_date = payload.date or date.today().isoformat()
-    existing = repo.fetch_exercises()
-    session_id = repo.get_or_create_session_id(session_date, payload.name)
+    existing = fetch_exercises()
+    session_id = get_or_create_session_id(session_date, payload.name)
 
     proposals = []
     errors = []
@@ -52,7 +57,7 @@ def bulk_propose(payload: BulkProposeRequest):
 
             key = (session_id, exercise)
             if key not in set_counters:
-                set_counters[key] = repo.next_set_index(session_id, exercise)
+                set_counters[key] = next_set_index(session_id, exercise)
             idx = set_counters[key]
             set_counters[key] += 1
 
@@ -86,7 +91,7 @@ def bulk_propose(payload: BulkProposeRequest):
 def bulk_confirm(payload: BulkConfirmRequest):
     saved = 0
     for p in payload.proposals:
-        repo.insert_set(
+        insert_set(
             session_id=int(p["session_id"]),
             exercise=str(p["exercise_saved_as"]),
             set_index=int(p["set_index"]),

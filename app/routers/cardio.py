@@ -1,6 +1,12 @@
 from fastapi import APIRouter, HTTPException
 from app.schemas.models import CardioCreate, CardioResponse
-from app.repositories.repo import get_or_create_session_id, insert_cardio, fetch_all_cardio, fetch_cardio_for_session, delete_cardio
+from app.repositories.workout_repo import get_or_create_session_id
+from app.repositories.cardio_repo import (
+    insert_cardio,
+    fetch_all_cardio,
+    fetch_cardio_for_session,
+    delete_cardio,
+)
 
 router = APIRouter(prefix="/cardio", tags=["cardio"])
 
