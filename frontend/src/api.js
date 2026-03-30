@@ -1,25 +1,5 @@
 const BASE = 'http://127.0.0.1:8000';
 
-export async function chatPropose(text) {
-  const res = await fetch(`${BASE}/chat/`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text }),
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
-}
-
-export async function confirmSet(proposal) {
-  const res = await fetch(`${BASE}/confirm/`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ proposal }),
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
-}
-
 export async function getHistory() {
   const res = await fetch(`${BASE}/history/`);
   return res.json();
@@ -66,10 +46,32 @@ export async function deleteSession(sessionId) {
   return res.json();
 }
 
-export async function deleteSet(setId) {
-  const res = await fetch(`${BASE}/set/${setId}`, { method: 'DELETE' });
+export async function updateSessionName(sessionId, name) {
+  const res = await fetch(`${BASE}/session/${sessionId}/name`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
+}
+
+export async function addSetsToSession(sessionId, lines, sessionDate, sessionName) {
+  const res = await fetch(`${BASE}/bulk/propose`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ lines, date: sessionDate, name: sessionName }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  const proposed = await res.json();
+
+  const confirm = await fetch(`${BASE}/bulk/confirm`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ proposals: proposed.proposals, name: sessionName }),
+  });
+  if (!confirm.ok) throw new Error(await confirm.text());
+  return confirm.json();
 }
 
 export async function getDashboard() {
@@ -97,6 +99,37 @@ export async function getAllCardio() {
 
 export async function deleteCardio(cardioId) {
   const res = await fetch(`${BASE}/cardio/${cardioId}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+// --- Kehonpaino ---
+
+export async function logWeight(date, weight_kg) {
+  const res = await fetch(`${BASE}/weight/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ date, weight_kg }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function getAllWeights() {
+  const res = await fetch(`${BASE}/weight/`);
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function getLatestWeight() {
+  const res = await fetch(`${BASE}/weight/latest`);
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function deleteWeight(weightId) {
+  const res = await fetch(`${BASE}/weight/${weightId}`, { method: 'DELETE' });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
