@@ -15,6 +15,29 @@ def get_week_start(d: date) -> str:
     return (d - timedelta(days=d.weekday())).isoformat()
 
 
+def _sparkline_trend(sparkline: list) -> str:
+    if len(sparkline) < 2:
+        return 'flat'
+
+    one_month_ago = (date.today() - timedelta(days=30)).isoformat()
+
+    weights = [p["weight"] for p in sparkline]
+    latest = weights[-1]
+    prev = weights[-2]
+
+    recent_points = [p for p in sparkline if p["date"] >= one_month_ago]
+    recent_peak = max(p["weight"] for p in recent_points) if recent_points else latest
+    all_time_peak = max(weights)
+
+    if latest >= recent_peak and latest > prev:
+        return 'up'
+
+    if latest < all_time_peak * 0.95:
+        return 'down'
+
+    return 'flat'
+
+
 def build_dashboard_response():
     conn = get_connection()
     cur = conn.cursor()
@@ -66,6 +89,25 @@ def build_dashboard_response():
         if float(r["weight"] or 0) > 0
     )
 
+    # --- Edellinen sama treenityyppi volyymi ---
+    prev_same_volume = None
+    if last_name and last_date:
+        same_type_dates = sorted(set(
+            r["date"] for r in rows
+            if r["name"] == last_name and r["date"] < last_date
+        ), reverse=True)
+        if same_type_dates:
+            prev_date = same_type_dates[0]
+            prev_rows = [r for r in rows if r["date"] == prev_date]
+            prev_vol = sum(
+                float(r["weight"] or 0) * int(r["reps"])
+                for r in prev_rows
+                if float(r["weight"] or 0) > 0
+            )
+            if prev_vol > 0:
+                change = round((last_volume - prev_vol) / prev_vol * 100, 1)
+                prev_same_volume = {"date": prev_date, "volume": round(prev_vol, 0), "change_pct": change}
+
     # --- PR per liike ---
     exercise_bests = defaultdict(lambda: {"weight": 0, "reps": 0, "date": ""})
     exercise_history = defaultdict(list)
@@ -94,9 +136,17 @@ def build_dashboard_response():
             if h["weight"] > daily[h["date"]]:
                 daily[h["date"]] = h["weight"]
         sparkline = [{"date": d, "weight": v} for d, v in sorted(daily.items())]
-        prs.append({**best, "sparkline": sparkline})
+        trend = _sparkline_trend(sparkline)
+        prs.append({**best, "sparkline": sparkline, "trend": trend})
 
-    prs = sorted(prs, key=lambda x: x["weight"], reverse=True)[:6]
+    trend_order = {"up": 0, "flat": 1, "down": 2}
+    prs_sorted = sorted(prs, key=lambda x: (trend_order[x["trend"]], -x["weight"]))
+
+    rising = [p for p in prs_sorted if p["trend"] == "up"]
+    flat = [p for p in prs_sorted if p["trend"] == "flat"]
+    down = [p for p in prs_sorted if p["trend"] == "down"]
+
+    final_prs = (rising + flat + down)[:6]
 
     # --- Kaikki treeni-sessiot ---
     seen_training = {}
@@ -112,16 +162,12 @@ def build_dashboard_response():
         if d not in seen_cardio:
             seen_cardio[d] = {"date": d, "name": "Aerobinen", "type": "cardio"}
 
-    # Yhdistetty kalenteri-lookup
     seen_all = {}
     for d, s in seen_training.items():
         seen_all[d] = s
     for d, s in seen_cardio.items():
         if d not in seen_all:
             seen_all[d] = s
-        else:
-            # Sama päivä — treeni menee etusijalle kalenterissa
-            pass
 
     all_dates = sorted(seen_all.keys())
 
@@ -142,7 +188,7 @@ def build_dashboard_response():
         for k, v in sorted(session_type_counts.items(), key=lambda x: -x[1])
     ]
 
-    # --- Settimäärä per viikko (viimeiset 6 viikkoa) ---
+    # --- Settimäärä per viikko ---
     weekly_sets = defaultdict(int)
     for r in rows:
         d = datetime.strptime(r["date"], "%Y-%m-%d").date()
@@ -197,9 +243,10 @@ def build_dashboard_response():
                 "exercise": best_last["exercise"],
                 "weight": float(best_last["weight"]),
                 "reps": int(best_last["reps"]),
-            } if best_last else None
+            } if best_last else None,
+            "prev_same_volume": prev_same_volume,
         },
-        "prs": prs,
+        "prs": final_prs,
         "training_split": training_split,
         "weekly_volume": weekly_volume_data,
         "calendar": calendar_days,
